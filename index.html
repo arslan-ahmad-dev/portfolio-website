@@ -597,15 +597,11 @@
     </p>
 
     <div class="github-grid">
-      <a href="https://github.com/arslan-ahmad-dev" target="_blank" rel="noopener noreferrer" class="github-card" aria-label="GitHub Stats">
-        <img src="https://github-readme-stats-sigma-five.vercel.app/api?username=arslan-ahmad-dev&show_icons=true&hide_border=true&bg_color=0d1425&title_color=6c8cff&icon_color=8b5cf6&text_color=c8d0e0&include_all_commits=true&count_private=true" alt="Arslan Ahmad's GitHub stats" loading="lazy" />
-      </a>
+      <a href="https://github.com/arslan-ahmad-dev" target="_blank" rel="noopener noreferrer" class="github-card gh-native" aria-label="GitHub Stats"><div id="gh-stats" class="gh-box">Loading…</div></a>
       <a href="https://github.com/arslan-ahmad-dev" target="_blank" rel="noopener noreferrer" class="github-card" aria-label="GitHub Streak">
         <img src="https://streak-stats.demolab.com/?user=arslan-ahmad-dev&hide_border=true&background=0d1425&stroke=0d1425&ring=6c8cff&fire=8b5cf6&currStreakLabel=6c8cff&currStreakNum=c8d0e0&sideNums=c8d0e0&sideLabels=8c94a8&dates=8c94a8" alt="GitHub contribution streak" loading="lazy" />
       </a>
-      <a href="https://github.com/arslan-ahmad-dev" target="_blank" rel="noopener noreferrer" class="github-card" aria-label="Top Languages">
-        <img src="https://github-readme-stats-sigma-five.vercel.app/api/top-langs/?username=arslan-ahmad-dev&layout=compact&hide_border=true&bg_color=0d1425&title_color=6c8cff&text_color=c8d0e0&langs_count=8" alt="Top languages used on GitHub" loading="lazy" />
-      </a>
+      <a href="https://github.com/arslan-ahmad-dev" target="_blank" rel="noopener noreferrer" class="github-card gh-native" aria-label="Top Languages"><div id="gh-langs" class="gh-box">Loading…</div></a>
     </div>
 
     <a href="https://github.com/arslan-ahmad-dev" target="_blank" rel="noopener noreferrer" class="contribution-chart" aria-label="Contribution graph">
@@ -749,5 +745,31 @@
   })();
 </script>
 
+<script>
+(async function () {
+  const U = 'arslan-ahmad-dev';
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  try {
+    const [u, repos] = await Promise.all([
+      fetch('https://api.github.com/users/' + U).then(r => r.ok ? r.json() : Promise.reject()),
+      fetch('https://api.github.com/users/' + U + '/repos?per_page=100&type=owner').then(r => r.ok ? r.json() : Promise.reject())
+    ]);
+    const own = repos.filter(r => !r.fork);
+    const stars = own.reduce((n, r) => n + r.stargazers_count, 0);
+    const rows = [['Public Repos', u.public_repos], ['Total Stars', stars], ['Followers', u.followers], ['Following', u.following]];
+    document.getElementById('gh-stats').innerHTML = '<h4>' + esc(u.name || U) + "'s GitHub Stats</h4>" +
+      rows.map(r => '<div class="gh-row"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('');
+    const c = {};
+    own.forEach(r => { if (r.language) c[r.language] = (c[r.language] || 0) + 1; });
+    const total = Object.values(c).reduce((a, b) => a + b, 0) || 1;
+    const top = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    document.getElementById('gh-langs').innerHTML = '<h4>Top Languages</h4>' +
+      top.map(([l, n]) => { const p = Math.round(n / total * 100);
+        return '<div class="gh-lang"><div class="gh-row"><span>' + esc(l) + '</span><b>' + p + '%</b></div><div class="gh-bar"><i style="width:' + p + '%"></i></div></div>'; }).join('');
+  } catch (e) {
+    ['gh-stats', 'gh-langs'].forEach(id => { document.getElementById(id).textContent = 'Open GitHub profile →'; });
+  }
+})();
+</script>
 </body>
 </html>
